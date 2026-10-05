@@ -1,7 +1,23 @@
-# DSP Mixer Android v4
+# EqualizerTube V2 — DAW Mixer
 
-Project DSP Mixer Android yang disiapkan agar pemilik HP saja dapat menghasilkan APK melalui GitHub Actions, tanpa Android Studio/PC.
+Versi 2 menggunakan orientasi landscape dan tampilan mixer:
+- MUSIC
+- MIC
+- AUX
+- FX
+- MASTER
+- Mute / Solo
+- Channel EQ
+- Fader per channel
+- Master fader
+- Meter
+- Play / Stop
+- Pilih file audio
 
-Fitur v3 yang dibawa: 16 channel, EQ, compressor, routing bus, spectrum, reverb/delay, limiter, crossover, scene/preset, dan USB-audio hooks.
+Build:
+1. Upload isi proyek ke GitHub.
+2. Actions → Build EqualizerTube V2 APK.
+3. Run workflow.
+4. Ambil artifact EqualizerTube-V2-debug-apk.
 
-**Build paling mudah:** ikuti `BUILD_ON_PHONE.md`.
+Catatan: meter pada versi ini adalah UI mixer awal; DSP real-time multi-channel akan menjadi tahap berikutnya.
