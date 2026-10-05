@@ -1,23 +1,23 @@
 # EqualizerTube V2 — DAW Mixer
 
-Versi 2 menggunakan orientasi landscape dan tampilan mixer:
-- MUSIC
-- MIC
-- AUX
-- FX
-- MASTER
-- Mute / Solo
-- Channel EQ
-- Fader per channel
-- Master fader
-- Meter
-- Play / Stop
-- Pilih file audio
+Paket proyek Android siap di-upload ke GitHub.
 
-Build:
-1. Upload isi proyek ke GitHub.
-2. Actions → Build EqualizerTube V2 APK.
-3. Run workflow.
-4. Ambil artifact EqualizerTube-V2-debug-apk.
+## Fitur V2
+- Tampilan landscape mixer
+- Channel MUSIC, MIC, AUX, FX
+- Gain/fader channel
+- MUTE / SOLO UI
+- EQ LOW / MID / HIGH per channel
+- Master fader dan meter UI
+- Pilih file audio dari HP
+- Play / Pause / Stop
+- GitHub Actions otomatis membuat APK debug
 
-Catatan: meter pada versi ini adalah UI mixer awal; DSP real-time multi-channel akan menjadi tahap berikutnya.
+## Cara build di GitHub
+1. Upload seluruh isi folder ini ke repository.
+2. Buka **Actions**.
+3. Pilih **Build EqualizerTube V2 APK**.
+4. Tekan **Run workflow**.
+5. Setelah selesai, buka hasil workflow dan download artifact **EqualizerTube-V2-debug**.
+
+Catatan: versi ini adalah fondasi UI mixer dan pemutar audio. EQ/fader belum merupakan DSP multi-channel real-time penuh; tahap DSP real-time dapat ditambahkan setelah APK dasar berhasil dibuild.
