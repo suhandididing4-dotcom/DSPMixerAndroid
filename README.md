@@ -1,23 +1,25 @@
-# EqualizerTube V2 — DAW Mixer
+# EqualizerTube V2 — READY TO BUILD
 
-Paket proyek Android siap di-upload ke GitHub.
+Paket ini sudah disiapkan khusus untuk GitHub Actions.
 
-## Fitur V2
-- Tampilan landscape mixer
-- Channel MUSIC, MIC, AUX, FX
-- Gain/fader channel
-- MUTE / SOLO UI
-- EQ LOW / MID / HIGH per channel
-- Master fader dan meter UI
-- Pilih file audio dari HP
-- Play / Pause / Stop
-- GitHub Actions otomatis membuat APK debug
+## PENTING
+Upload **isi folder ZIP ini**, bukan file ZIP sebagai satu file.
 
-## Cara build di GitHub
-1. Upload seluruh isi folder ini ke repository.
-2. Buka **Actions**.
-3. Pilih **Build EqualizerTube V2 APK**.
-4. Tekan **Run workflow**.
-5. Setelah selesai, buka hasil workflow dan download artifact **EqualizerTube-V2-debug**.
+Struktur root repository harus terlihat seperti:
+- `.github/`
+- `app/`
+- `build.gradle`
+- `settings.gradle`
+- `gradle.properties`
 
-Catatan: versi ini adalah fondasi UI mixer dan pemutar audio. EQ/fader belum merupakan DSP multi-channel real-time penuh; tahap DSP real-time dapat ditambahkan setelah APK dasar berhasil dibuild.
+Jangan memakai file proyek lama seperti `main.yml`, `gradlew`, atau file AndroidManifest/MainActivity lama.
+
+## Build
+1. Upload isi ZIP ke repository.
+2. Commit ke branch `main`.
+3. Buka Actions.
+4. Pilih `Build EqualizerTube V2 APK`.
+5. Tekan `Run workflow`.
+6. Jika hijau, buka hasil job dan download `EqualizerTube-V2-debug`.
+
+Workflow memasang JDK 17, Android SDK 35, Gradle 8.9, lalu memeriksa bahwa APK benar-benar ada sebelum artifact diunggah.
