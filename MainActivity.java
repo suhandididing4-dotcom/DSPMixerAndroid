@@ -1,175 +1,47 @@
-package com.suhandigital.equalizertube;
+package com.ad1ng.digitalmixer;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.content.Intent;
+import android.net.Uri;
+import android.media.MediaPlayer;
+import android.media.audiofx.Equalizer;
+import android.media.audiofx.BassBoost;
+import android.media.audiofx.PresetReverb;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.*;
-import java.util.Locale;
 
 public class MainActivity extends Activity {
-    LinearLayout root, mixer;
-    TextView status;
-
-    int bg = Color.rgb(14, 18, 23);
-    int panel = Color.rgb(25, 31, 38);
-    int panel2 = Color.rgb(32, 39, 48);
-    int text = Color.rgb(235, 240, 245);
-    int muted = Color.rgb(160, 171, 183);
-    int accent = Color.rgb(54, 169, 255);
-
-    @Override public void onCreate(Bundle b) {
-        super.onCreate(b);
-        buildUi();
+    int bg=Color.rgb(7,15,25), panel=Color.rgb(15,29,43), orange=Color.rgb(255,119,24), white=Color.WHITE, muted=Color.rgb(170,190,205);
+    LinearLayout page; TextView track,status; MediaPlayer player; Equalizer eq; BassBoost bass; PresetReverb reverb; int session; final int PICK=101;
+    GradientDrawable shape(int c,int stroke){GradientDrawable d=new GradientDrawable();d.setColor(c);d.setCornerRadius(22);if(stroke!=0)d.setStroke(2,stroke);return d;}
+    TextView label(String s,int size,int color,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);if(bold)t.setTypeface(null,Typeface.BOLD);t.setPadding(2,5,2,5);return t;}
+    LinearLayout col(){LinearLayout l=new LinearLayout(this);l.setOrientation(1);return l;} LinearLayout row(){LinearLayout l=new LinearLayout(this);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
+    Button btn(String s){Button b=new Button(this);b.setText(s);b.setAllCaps(false);b.setTextColor(white);b.setBackground(shape(Color.rgb(31,48,64),orange));return b;}
+    void card(LinearLayout parent,LinearLayout content){content.setPadding(14,10,14,10);content.setBackground(shape(panel,Color.rgb(33,57,76)));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,7,0,7);parent.addView(content,p);}
+    public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(bg);getWindow().setNavigationBarColor(bg);build();}
+    void build(){
+        ScrollView sc=new ScrollView(this);page=col();page.setPadding(16,12,16,20);page.setBackgroundColor(bg);sc.addView(page);
+        page.addView(label("AD 1 NG",32,orange,true));page.addView(label("DIGITAL MIXER • DSP AUDIO PROCESSOR",12,muted,true));page.addView(label("Mixer • Equalizer • Effects • Music Player",14,white,false));
+        LinearLayout music=col();music.addView(label("MUSIC PLAYER",18,white,true));track=label("Belum ada lagu dipilih",14,muted,false);music.addView(track);
+        LinearLayout controls=row();Button pick=btn("Pilih Lagu");pick.setOnClickListener(v->pickSong());Button play=btn("▶ / ❚❚");play.setOnClickListener(v->toggle());Button stop=btn("Stop");stop.setOnClickListener(v->stop());controls.addView(pick,new LinearLayout.LayoutParams(0,-2,1));controls.addView(play,new LinearLayout.LayoutParams(0,-2,1));controls.addView(stop,new LinearLayout.LayoutParams(0,-2,1));music.addView(controls);status=label("Status: siap",12,orange,true);music.addView(status);card(page,music);
+        LinearLayout presets=col();presets.addView(label("PRESET MUSIK",18,white,true));presetRows(presets,new String[]{"Flat","Dangdut","Pop","Rock","EDM","Reggae","Bass Boost"});presets.addView(label("PRESET VOKAL",18,white,true));presetRows(presets,new String[]{"Natural","Male","Female","Bright","Warm","Radio","Deep"});card(page,presets);
+        LinearLayout e=col();e.addView(label("EQUALIZER",18,white,true));e.addView(label("Kontrol band EQ perangkat jika didukung",12,muted,false));String[] bands={"Bass","Low","Mid","High","Treble"};for(int i=0;i<5;i++)addBand(e,bands[i],i);card(page,e);
+        LinearLayout fx=col();fx.addView(label("EFEK AUDIO",18,white,true));Switch bs=new Switch(this);bs.setText("Bass Boost");bs.setTextColor(white);bs.setOnCheckedChangeListener((v,on)->{try{if(bass!=null)bass.setEnabled(on);}catch(Exception ex){}});fx.addView(bs);Switch rv=new Switch(this);rv.setText("Preset Reverb");rv.setTextColor(white);rv.setOnCheckedChangeListener((v,on)->{try{if(reverb!=null)reverb.setEnabled(on);}catch(Exception ex){}});fx.addView(rv);fx.addView(label("Delay dan compressor belum diimplementasikan pada versi ini.",12,muted,false));card(page,fx);
+        LinearLayout out=col();out.addView(label("OUTPUT & LIVE",18,white,true));out.addView(label("Output mengikuti speaker, headset, Bluetooth atau USB yang dipilih Android dan didukung HP.",13,white,false));out.addView(label("Aplikasi memproses lagu di dalam player. Audio TikTok/YouTube dari aplikasi lain tidak bisa dijamin diproses karena batasan Android. Routing langsung ke OBS/TikTok belum tersedia.",13,muted,false));card(page,out);setContentView(sc);
     }
-
-    TextView tv(String s, float sp, int c) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(sp);
-        t.setTextColor(c);
-        t.setGravity(Gravity.CENTER_VERTICAL);
-        t.setPadding(12, 8, 12, 8);
-        return t;
-    }
-
-    GradientDrawable bg(int color, float radius) {
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(color);
-        g.setCornerRadius(radius);
-        return g;
-    }
-
-    LinearLayout box(int color, int pad) {
-        LinearLayout l = new LinearLayout(this);
-        l.setOrientation(LinearLayout.VERTICAL);
-        l.setPadding(pad, pad, pad, pad);
-        l.setBackground(bg(color, 18));
-        return l;
-    }
-
-    void addWeight(View v, float w) {
-        root.addView(v, new LinearLayout.LayoutParams(0, -2, w));
-    }
-
-    void buildUi() {
-        ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(bg);
-        root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(10, 10, 10, 18);
-        root.setBackgroundColor(bg);
-        scroll.addView(root);
-        setContentView(scroll);
-
-        LinearLayout head = box(panel, 10);
-        TextView title = tv("EqualizerTube V2", 22, text);
-        title.setTypeface(null, 1);
-        head.addView(title);
-        status = tv("● Sistem Aktif   •   DSP Ready", 13, Color.rgb(100, 220, 130));
-        head.addView(status);
-        root.addView(head);
-
-        Space sp = new Space(this);
-        root.addView(sp, new LinearLayout.LayoutParams(1, 8));
-
-        LinearLayout transport = box(panel, 8);
-        TextView now = tv("♪  No Copyright Music - Feel Good", 16, text);
-        transport.addView(now);
-        LinearLayout buttons = new LinearLayout(this);
-        buttons.setGravity(Gravity.CENTER);
-        String[] bs = {"⏮", "▶", "⏸", "⏹", "⏭"};
-        for (String x : bs) {
-            Button bt = new Button(this);
-            bt.setText(x);
-            bt.setTextColor(text);
-            bt.setTextSize(18);
-            bt.setBackground(bg(panel2, 14));
-            buttons.addView(bt, new LinearLayout.LayoutParams(0, 52, 1));
-            if (x.equals("▶")) bt.setOnClickListener(v -> status.setText("● Memutar • DSP Aktif"));
-            if (x.equals("⏹")) bt.setOnClickListener(v -> status.setText("● Berhenti • DSP Ready"));
-        }
-        transport.addView(buttons);
-        root.addView(transport);
-
-        TextView mh = tv("CHANNEL MIXER", 14, muted);
-        mh.setPadding(4, 16, 4, 8);
-        root.addView(mh);
-
-        mixer = new LinearLayout(this);
-        mixer.setOrientation(LinearLayout.VERTICAL);
-        String[] channels = {"Music", "Mic 1", "Mic 2", "System", "Game", "Browser", "AUX 1", "AUX 2", "Master"};
-        for (String ch : channels) addChannel(ch);
-        root.addView(mixer);
-
-        TextView eh = tv("EFFECTS (DSP)", 14, muted);
-        eh.setPadding(4, 16, 4, 8);
-        root.addView(eh);
-
-        LinearLayout effects = box(panel, 10);
-        TextView tabs = tv("EQ     Compressor     Gate     Limiter", 14, accent);
-        effects.addView(tabs);
-        TextView eq = tv("Parametric EQ\nLow     +2.0 dB     •     Mid     0.0 dB     •     High     +1.5 dB", 15, text);
-        effects.addView(eq);
-        SeekBar low = new SeekBar(this); low.setProgress(62);
-        SeekBar mid = new SeekBar(this); mid.setProgress(50);
-        SeekBar high = new SeekBar(this); high.setProgress(58);
-        effects.addView(tv("Low", 12, muted)); effects.addView(low);
-        effects.addView(tv("Mid", 12, muted)); effects.addView(mid);
-        effects.addView(tv("High", 12, muted)); effects.addView(high);
-        root.addView(effects);
-
-        TextView rh = tv("OUTPUT / OBS", 14, muted);
-        rh.setPadding(4, 16, 4, 8);
-        root.addView(rh);
-
-        LinearLayout out = box(panel, 10);
-        out.addView(tv("Virtual Output (Untuk OBS)", 16, text));
-        Switch sw = new Switch(this);
-        sw.setText("Aktif");
-        sw.setTextColor(text);
-        sw.setChecked(true);
-        out.addView(sw);
-        out.addView(tv("Device: Android Audio Output", 13, muted));
-        out.addView(tv("Catatan: versi ini adalah fondasi DSP/equalizer Android yang buildable.", 12, muted));
-        root.addView(out);
-    }
-
-    void addChannel(String name) {
-        LinearLayout c = box(panel, 8);
-        TextView h = tv(name, 16, name.equals("Master") ? Color.rgb(90, 220, 170) : text);
-        h.setTypeface(null, 1);
-        c.addView(h);
-
-        SeekBar gain = new SeekBar(this);
-        gain.setProgress(50);
-        c.addView(tv("Gain   0.0 dB", 12, muted));
-        c.addView(gain);
-
-        SeekBar fader = new SeekBar(this);
-        fader.setProgress(name.equals("Master") ? 80 : 65);
-        c.addView(tv("Level", 12, muted));
-        c.addView(fader);
-
-        LinearLayout row = new LinearLayout(this);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        Button mute = new Button(this); mute.setText("M");
-        Button solo = new Button(this); solo.setText("S");
-        TextView val = tv(name.equals("Master") ? "-1.0 dB" : "-6.0 dB", 13, accent);
-        row.addView(mute, new LinearLayout.LayoutParams(0, 48, 1));
-        row.addView(solo, new LinearLayout.LayoutParams(0, 48, 1));
-        row.addView(val, new LinearLayout.LayoutParams(0, 48, 2));
-        c.addView(row);
-        mute.setOnClickListener(v -> {
-            boolean on = !mute.isSelected();
-            mute.setSelected(on);
-            mute.setText(on ? "M ON" : "M");
-            val.setText(on ? "-∞ dB" : (name.equals("Master") ? "-1.0 dB" : "-6.0 dB"));
-        });
-        mixer.addView(c, new LinearLayout.LayoutParams(-1, -2));
-        Space gap = new Space(this);
-        mixer.addView(gap, new LinearLayout.LayoutParams(1, 6));
-    }
+    void presetRows(LinearLayout p,String[] names){for(int i=0;i<names.length;i+=2){LinearLayout r=row();for(int j=i;j<Math.min(i+2,names.length);j++){String n=names[j];Button b=btn(n);b.setOnClickListener(v->preset(n));r.addView(b,new LinearLayout.LayoutParams(0,-2,1));}p.addView(r);}}
+    void addBand(LinearLayout p,String name,int index){LinearLayout c=col();c.addView(label(name,13,white,false));SeekBar s=new SeekBar(this);s.setMax(100);s.setProgress(50);s.setProgressTintList(android.content.res.ColorStateList.valueOf(orange));s.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar x,int val,boolean user){try{if(user&&eq!=null){short[] range=eq.getBandLevelRange();short band=(short)Math.min(eq.getNumberOfBands()-1,index);eq.setBandLevel(band,(short)(range[0]+(range[1]-range[0])*val/100));}}catch(Exception ex){}}public void onStartTrackingTouch(SeekBar x){}public void onStopTrackingTouch(SeekBar x){}});c.addView(s);p.addView(c);}
+    void pickSong(){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.setType("audio/*");i.addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(i,PICK);}
+    protected void onActivityResult(int r,int res,Intent d){super.onActivityResult(r,res,d);if(r==PICK&&res==RESULT_OK&&d!=null&&d.getData()!=null)startSong(d.getData());}
+    void startSong(Uri uri){releaseFx();if(player!=null)player.release();try{player=new MediaPlayer();player.setDataSource(this,uri);player.setOnPreparedListener(mp->{session=mp.getAudioSessionId();initFx();mp.start();track.setText("Memutar: "+uri.getLastPathSegment());status.setText("Status: memutar lagu");});player.setOnCompletionListener(mp->status.setText("Status: lagu selesai"));player.setOnErrorListener((mp,w,x)->{status.setText("Tidak dapat memutar file ini");return true;});player.prepareAsync();track.setText("Memuat lagu…");}catch(Exception e){status.setText("Gagal membuka audio");}}
+    void initFx(){try{eq=new Equalizer(0,session);eq.setEnabled(true);bass=new BassBoost(0,session);bass.setStrength((short)500);bass.setEnabled(false);reverb=new PresetReverb(0,session);reverb.setPreset(PresetReverb.PRESET_MEDIUMROOM);reverb.setEnabled(false);}catch(Exception e){status.setText("Player aktif; efek tidak didukung perangkat");}}
+    void preset(String n){if(eq==null){status.setText("Pilih dan putar lagu dahulu");return;}try{short count=eq.getNumberOfBands();short[] range=eq.getBandLevelRange();for(short b=0;b<count;b++){int v=0;if(n.equals("Bass Boost")||n.equals("Dangdut")||n.equals("EDM"))v=b<2?700:(b>count-3?-100:0);else if(n.equals("Rock"))v=(b==0||b==count-1)?250:0;else if(n.equals("Bright")||n.equals("Female"))v=b>count/2?250:0;else if(n.equals("Warm")||n.equals("Male")||n.equals("Deep"))v=b<count/3?200:0;else if(n.equals("Radio"))v=(b==0||b==count-1)?-400:100;v=Math.max(range[0],Math.min(range[1],v));eq.setBandLevel(b,(short)v);}if(bass!=null)bass.setEnabled(n.equals("Bass Boost")||n.equals("Dangdut")||n.equals("EDM"));status.setText("Preset dipilih: "+n);}catch(Exception e){status.setText("Preset tidak didukung HP ini");}}
+    void toggle(){if(player==null){pickSong();return;}if(player.isPlaying()){player.pause();status.setText("Status: dijeda");}else{player.start();status.setText("Status: memutar");}}
+    void stop(){if(player!=null){player.stop();player.release();player=null;releaseFx();track.setText("Pemutaran dihentikan");status.setText("Status: siap");}}
+    void releaseFx(){try{if(eq!=null)eq.release();}catch(Exception e){}eq=null;try{if(bass!=null)bass.release();}catch(Exception e){}bass=null;try{if(reverb!=null)reverb.release();}catch(Exception e){}reverb=null;}
+    protected void onDestroy(){if(player!=null)player.release();releaseFx();super.onDestroy();}
 }
